@@ -97,3 +97,5 @@ plot/
 *.zip
 
 media/*
+
+filetest.py
