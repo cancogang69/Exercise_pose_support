@@ -95,3 +95,5 @@ plot/
 
 #ignore all zip file
 *.zip
+
+media/*
