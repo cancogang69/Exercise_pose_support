@@ -10,7 +10,7 @@ from __future__ import print_function
 
 import numpy as np
 
-from core.inference import get_max_preds
+from .inference import get_max_preds
 
 
 def calc_dists(preds, target, normalize):

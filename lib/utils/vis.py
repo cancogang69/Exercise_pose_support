@@ -14,7 +14,7 @@ import numpy as np
 import torchvision
 import cv2
 
-from core.inference import get_max_preds
+from lib.core.inference import get_max_preds
 
 
 def save_batch_image_with_joints(batch_image, batch_joints, batch_joints_vis,
