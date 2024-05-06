@@ -16,7 +16,7 @@ from collections import OrderedDict
 import numpy as np
 from scipy.io import loadmat, savemat
 
-from dataset.JointsDataset import JointsDataset
+from .JointsDataset import JointsDataset
 
 
 logger = logging.getLogger(__name__)
