@@ -10,17 +10,6 @@ from __future__ import print_function
 
 from yacs.config import CfgNode as CN
 
-
-# pose_resnet related params
-POSE_RESNET = CN()
-POSE_RESNET.NUM_LAYERS = 50
-POSE_RESNET.DECONV_WITH_BIAS = False
-POSE_RESNET.NUM_DECONV_LAYERS = 3
-POSE_RESNET.NUM_DECONV_FILTERS = [256, 256, 256]
-POSE_RESNET.NUM_DECONV_KERNELS = [4, 4, 4]
-POSE_RESNET.FINAL_CONV_KERNEL = 1
-POSE_RESNET.PRETRAINED_LAYERS = ['*']
-
 # pose_multi_resoluton_net related params
 POSE_HIGH_RESOLUTION_NET = CN()
 POSE_HIGH_RESOLUTION_NET.PRETRAINED_LAYERS = ['*']
@@ -53,6 +42,5 @@ POSE_HIGH_RESOLUTION_NET.STAGE4.FUSE_METHOD = 'SUM'
 
 
 MODEL_EXTRAS = {
-    'pose_resnet': POSE_RESNET,
     'pose_high_resolution_net': POSE_HIGH_RESOLUTION_NET,
 }

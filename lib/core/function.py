@@ -4,7 +4,7 @@
 # Written by Bin Xiao (Bin.Xiao@microsoft.com)
 # ------------------------------------------------------------------------------
 
-from __future__ import absolute_import
+# from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
  
@@ -17,8 +17,8 @@ import torch
 
 from .evaluate import accuracy
 from .inference import get_final_preds
-from utils.transforms import flip_back
-from utils.vis import save_debug_images
+from lib.utils.transforms import flip_back
+from lib.utils.vis import save_debug_images
 
 
 logger = logging.getLogger(__name__)

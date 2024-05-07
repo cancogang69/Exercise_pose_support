@@ -4,7 +4,7 @@
 # Written by Bin Xiao (Bin.Xiao@microsoft.com)
 # ------------------------------------------------------------------------------
 
-from __future__ import absolute_import
+# from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
@@ -16,7 +16,7 @@ from collections import OrderedDict
 import numpy as np
 from scipy.io import loadmat, savemat
 
-from .JointsDataset import JointsDataset
+from lib.dataset.JointsDataset import JointsDataset
 
 
 logger = logging.getLogger(__name__)
