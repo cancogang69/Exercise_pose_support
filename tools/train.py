@@ -35,6 +35,7 @@ from utils.utils import get_model_summary
 
 import dataset
 import models
+from models.pose_hrnet import get_pose_net
 
 
 def parse_args():
@@ -88,9 +89,7 @@ def main():
     torch.backends.cudnn.deterministic = cfg.CUDNN.DETERMINISTIC
     torch.backends.cudnn.enabled = cfg.CUDNN.ENABLED
 
-    model = eval('models.'+cfg.MODEL.NAME+'.get_pose_net')(
-        cfg, is_train=True
-    )
+    model = get_pose_net(cfg, is_train=True)
 
     # copy model file
     this_dir = os.path.dirname(__file__)
