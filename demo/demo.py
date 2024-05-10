@@ -21,8 +21,8 @@ import numpy as np
 import time
 
 
-import _init_paths
-import models
+
+import lib.models
 from config import cfg
 from config import update_config
 from core.function import get_final_preds

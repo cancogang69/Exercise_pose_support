@@ -34,8 +34,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-#lib/
-#lib64/
 parts/
 sdist/
 var/
@@ -81,19 +79,19 @@ target/
 *.json
 .vscode/
 
-lib/pycocotools/_mask.c
-lib/nms/cpu_nms.c
-
 output/*
 models/*
 log/*
 data/*
 external/
-
-draws/
-plot/
+media/*
+runs/*
+log/*
+infer_output/*
 
 #ignore all zip file
 *.zip
 
-media/*
+filetest.py
+
+*.pt

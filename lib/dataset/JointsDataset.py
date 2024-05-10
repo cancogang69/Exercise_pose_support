@@ -17,9 +17,9 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from utils.transforms import get_affine_transform
-from utils.transforms import affine_transform
-from utils.transforms import fliplr_joints
+from lib.utils.transforms import get_affine_transform
+from lib.utils.transforms import affine_transform
+from lib.utils.transforms import fliplr_joints
 
 
 logger = logging.getLogger(__name__)
