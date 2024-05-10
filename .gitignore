@@ -93,3 +93,5 @@ infer_output/*
 *.zip
 
 filetest.py
+
+*.pt

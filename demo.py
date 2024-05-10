@@ -62,14 +62,13 @@ NUM_KPTS = len(MPII_KEYPOINT_INDEXES.keys())
 
 CTX = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-def draw_pose(keypoints, img):
+def draw_pose(keypoints, img, joint_thickness=6):
     assert keypoints.shape == (NUM_KPTS, 2)
-    for i in range(len(SKELETON)):
-        kpt_a, kpt_b = SKELETON[i][0], SKELETON[i][1]
-        x_a, y_a = keypoints[kpt_a][0], keypoints[kpt_a][1]
-        x_b, y_b = keypoints[kpt_b][0], keypoints[kpt_b][1] 
-        cv2.circle(img, (int(x_a), int(y_a)), 6, CocoColors[i], -1)
-        cv2.circle(img, (int(x_b), int(y_b)), 6, CocoColors[i], -1)
+    for i, (kpt_a, kpt_b) in enumerate(SKELETON):
+        x_a, y_a = keypoints[kpt_a]
+        x_b, y_b = keypoints[kpt_b]
+        cv2.circle(img, (int(x_a), int(y_a)), joint_thickness, CocoColors[i], -1)
+        cv2.circle(img, (int(x_b), int(y_b)), joint_thickness, CocoColors[i], -1)
         cv2.line(img, (int(x_a), int(y_a)), (int(x_b), int(y_b)), CocoColors[i], 2)
 
 def draw_bbox(box, img):
@@ -207,16 +206,15 @@ def main():
     args = parse_args()
     update_config(cfg, args)
 
-    output_path = "./infer_output"
-    output_image_path = os.path.join(output_path, "images")
-    output_video_path = os.path.join(output_path, "videos")
-    output_webcam_path = os.path.join(output_path, "webcam")
-
+    output_path = os.path.join(".", "infer_output")
     create_dir(output_path)
-    create_dir(output_image_path)
-    create_dir(output_video_path)
-    create_dir(output_webcam_path)
 
+    output_types = ["images", "videos", "webcam"]
+    output_type_paths = [os.path.join(output_path, media_type) for media_type in output_types]
+    print(output_type_paths)
+    for path in output_type_paths:
+        create_dir(path)
+    
     box_model = torch.hub.load('ultralytics/yolov5', 'yolov5s', _verbose=False)
     box_model_threshold = 0.7
 
@@ -246,10 +244,10 @@ def main():
     if args.webcam or args.video:
         if args.write:
             if args.video:
-                save_path = get_output_file_name(args.video, output_video_path)
+                save_path = get_output_file_name(args.video, output_type_paths[1])
             else:
                 now = get_datetime()
-                save_path = get_output_file_name(now, output_webcam_path)
+                save_path = get_output_file_name(now, output_type_paths[2])
             fourcc = cv2.VideoWriter_fourcc(*'XVID')
             out = cv2.VideoWriter(save_path, fourcc, 24.0, (int(vidcap.get(3)), int(vidcap.get(4))))
         while True:
@@ -308,7 +306,7 @@ def main():
             image = cv2.putText(image_bgr, 'fps: '+ "%.2f"%(fps), (25, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
         
         if args.write:
-            save_path = get_output_file_name(args.image, output_image_path)
+            save_path = get_output_file_name(args.image, output_type_paths[0])
             cv2.imwrite(save_path, image_bgr)
             print('the result image has been saved as {}'.format(save_path))
 
