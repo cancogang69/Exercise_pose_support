@@ -46,17 +46,26 @@ MPII_KEYPOINT_INDEXES = {
     15: "left wrist"
 }
 
-SKELETON = [
-    [0, 1], [1, 2], [2, 6], 
-    [5, 4], [4, 3], [3, 6],
-    [6, 7], [7, 8], [8, 9],
-    [10, 11], [11, 12], [12, 7],
-    [15, 14], [14, 13], [13, 7]
-]
+SKELETON = {
+    "left_lower_leg": [0, 1], 
+    "left_thigh": [1, 2], 
+    "left_hip": [2, 6], 
+    "right_lower_leg": [5, 4],
+    "right_thigh": [4, 3],
+    "right_hip": [3, 6],
+    "torso": [6, 7], 
+    "neck": [7, 8],             #actually it's thorax - upper neck 
+    "head": [8, 9],
+    "right_forearm": [10, 11],
+    "right_upper_arm": [11, 12], 
+    "right_shoulder": [12, 7],
+    "left_forearm": [15, 14],
+    "left_upper_arm": [14, 13], 
+    "left_shoulder": [13, 7]
+}
 
-CocoColors = [[255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0], [85, 255, 0], [0, 255, 0],
-              [0, 255, 85], [0, 255, 170], [0, 255, 255], [0, 170, 255], [0, 85, 255], [0, 0, 255], [85, 0, 255],
-              [170, 0, 255], [255, 0, 255], [255, 0, 170], [255, 0, 85]]
+red_value = [255, 0, 0]
+blue_value = [0, 0, 255]
 
 NUM_KPTS = len(MPII_KEYPOINT_INDEXES.keys())
 
@@ -64,12 +73,12 @@ CTX = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 def draw_pose(keypoints, img, joint_thickness=6):
     assert keypoints.shape == (NUM_KPTS, 2)
-    for i, (kpt_a, kpt_b) in enumerate(SKELETON):
+    for (kpt_a, kpt_b) in SKELETON.values():
         x_a, y_a = keypoints[kpt_a]
         x_b, y_b = keypoints[kpt_b]
-        cv2.circle(img, (int(x_a), int(y_a)), joint_thickness, CocoColors[i], -1)
-        cv2.circle(img, (int(x_b), int(y_b)), joint_thickness, CocoColors[i], -1)
-        cv2.line(img, (int(x_a), int(y_a)), (int(x_b), int(y_b)), CocoColors[i], 2)
+        cv2.circle(img, (int(x_a), int(y_a)), joint_thickness, red_value, -1)
+        cv2.circle(img, (int(x_b), int(y_b)), joint_thickness, red_value, -1)
+        cv2.line(img, (int(x_a), int(y_a)), (int(x_b), int(y_b)), blue_value, 2)
 
 def draw_bbox(box, img):
     """
@@ -211,7 +220,6 @@ def main():
 
     output_types = ["images", "videos", "webcam"]
     output_type_paths = [os.path.join(output_path, media_type) for media_type in output_types]
-    print(output_type_paths)
     for path in output_type_paths:
         create_dir(path)
     
@@ -298,6 +306,7 @@ def main():
             center, scale = box_to_center_scale(box, cfg.MODEL.IMAGE_SIZE[0], cfg.MODEL.IMAGE_SIZE[1])
             image_pose = image.copy() if cfg.DATASET.COLOR_RGB else image_bgr.copy()
             pose_preds = get_pose_estimation_prediction(pose_model, image_pose, center, scale)
+            np.savetxt("./4.txt", pose_preds.squeeze().astype(np.int32))
             for kpt in pose_preds:
                 draw_pose(kpt, image_bgr) # draw the poses
         

@@ -78,6 +78,12 @@ target/
 *.params
 *.json
 .vscode/
+*.zip
+*.pt
+*txt
+*.mp4
+*.csv
+
 
 output/*
 models/*
@@ -88,10 +94,7 @@ media/*
 runs/*
 log/*
 infer_output/*
+pose_test/*
 
-#ignore all zip file
-*.zip
 
 filetest.py
-
-*.pt
