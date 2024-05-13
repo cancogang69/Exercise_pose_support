@@ -1,9 +1,3 @@
-# IntelliJ project files
-.idea
-*.iml
-out
-gen
-
 ### Vim template
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]
@@ -47,10 +41,6 @@ var/
 *.manifest
 *.spec
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
 # Unit test / coverage reports
 htmlcov/
 .tox/
@@ -65,12 +55,6 @@ coverage.xml
 *.mo
 *.pot
 
-# Django stuff:
-*.log
-
-# Sphinx documentation
-docs/_build/
-
 # PyBuilder
 target/
 
@@ -80,19 +64,17 @@ target/
 .vscode/
 *.zip
 *.pt
-*txt
 *.mp4
 
 
-output/*
-models/*
-log/*
 data/*
-external/
-media/*
-runs/*
-log/*
 infer_output/*
+log/*
+media/*
+models/*
+output/*
+runs/*
+squat/joint/*
 pose_test/*
 
 
