@@ -82,7 +82,6 @@ target/
 *.pt
 *txt
 *.mp4
-*.csv
 
 
 output/*
