@@ -35,14 +35,6 @@ COLOR = demo_constant.COLOR
 
 # function definition
 def cosine_similarity(a, b):
-  return ( np.dot(a, b) / 
-          (np.linalg.norm(a) * np.linalg.norm(b)) )
-
-def angle_degree(a, b):
-  return (np.arccos(cosine_similarity(a, b)) / 
-          np.pi) * 180
-
-def cosine_similarity(a, b):
   cos = ( np.dot(a, b) / 
           (np.linalg.norm(a) * np.linalg.norm(b)) )
   if cos < -1:
@@ -51,7 +43,6 @@ def cosine_similarity(a, b):
     return 1
   else:
     return cos
-
 
 def angle_degree(a, b):
   angle = (np.arccos(cosine_similarity(a, b)) / 
@@ -75,20 +66,23 @@ def is_in_range(num, range1, range2):
   floor = min(range1, range2)
   return (num >= floor and num <= ceil)
 
-def find_pose_id(ske_pred, keyparts, stage):
+def find_pose_id(ske_pred, keyparts, stages):
   assert ske_pred.shape == (NUM_KPTS, 2)
-  sum = 0
+  avg_angle = 0
   for keypart in keyparts:
     part_a, part_b = keypart
     vec_a = return_vector(SKELETON[part_a], ske_pred)
     vec_b = return_vector(SKELETON[part_b], ske_pred)
 
+    if sum(vec_a == 0) == 2 or sum(vec_b == 0) == 2:
+      return -1
+    
     pred_angle = angle_degree(vec_a, vec_b)
-    sum += pred_angle
+    avg_angle += pred_angle
 
-  sum /= len(keyparts)
-  for i in range(len(stage)-1):
-    if is_in_range(sum, stage[i], stage[i+1]):
+  avg_angle /= len(keyparts)
+  for i, stage in enumerate(stages):
+    if is_in_range(avg_angle, stage[0], stage[1]):
       return i
 
 def compare_skeleton(ske_true, ske_pred, excer_part, threshold= 10):
@@ -114,25 +108,8 @@ def draw_pose(keypoints, part_flag, excer_part, img, joint_thickness=6):
     cv2.circle(img, (int(x_b), int(y_b)), joint_thickness, COLOR["green"], -1)
     cv2.line(img, (int(x_a), int(y_a)), (int(x_b), int(y_b)), c, 2)
 
-def draw_bbox(box, img):
-    """
-    draw the detected bounding box on the image.
-    """
-    cv2.rectangle(img, box[0], box[1], color=(0, 255, 0), thickness=3)
-
-
-def get_person_detection_boxes(model, img, threshold=0.5):
-  results = model(img)
-  
-  result_df = results.pandas().xyxy[0]
-  person_df = result_df[result_df["name"] == "person"]
-  person_df = person_df[person_df["confidence"] > threshold]
-  person_bboxes = person_df.iloc[:, :4].values
-
-  return person_bboxes
-
-
 def get_pose_estimation_prediction(pose_model, image, center, scale):
+  scale = np.array([scale, scale])
   rotation = 0
 
   # pose estimation transformation
@@ -163,42 +140,30 @@ def get_pose_estimation_prediction(pose_model, image, center, scale):
 
     return preds
 
+def calculate_center_scale(box):
+  x1, y1, x2, y2 = box
+  center_x = (x2 + x1) / 2
+  center_y = (y2 + y1) / 2
+  width = x2 - x1
+  height = y2 - y1
+  
+  center = np.array([center_x, center_y], dtype=np.float32)
+  scale = max(width, height) / 200
 
-def box_to_center_scale(box, model_image_width, model_image_height):
-  """convert a box to center,scale information required for pose transformation
-  Parameters
-  ----------
-  box : list of tuple
-      list of length 2 with two tuples of floats representing
-      bottom left and top right corner of a box
-  model_image_width : int
-  model_image_height : int
+  return center, scale
 
-  Returns
-  -------
-  (numpy array, numpy array)
-      Two numpy arrays, coordinates for the center of the box and the scale of the box
-  """
-  center = np.zeros((2), dtype=np.float32)
+def get_person_box(model, img):
+  results = model(img)
+  
+  data = results.xyxy[0].cpu().numpy()
+    
+  if len(data) == 0:
+    return np.array([-1])
 
-  x_min, y_min, x_max, y_max = box
-  box_width = x_max - x_min
-  box_height = y_max - y_min
-  center[0] = x_min + box_width * 0.5
-  center[1] = y_min + box_height * 0.5
+  max_index = np.argmax(data[:, 4])
+  max_element = data[max_index]
 
-  aspect_ratio = model_image_width * 1.0 / model_image_height
-  pixel_std = 200
-
-  if box_width > aspect_ratio * box_height:
-    box_height = box_width * 1.0 / aspect_ratio
-  elif box_width < aspect_ratio * box_height:
-    box_width = box_height * aspect_ratio
-  scale = np.array(
-    [box_width * 1.0 / pixel_std, box_height * 1.0 / pixel_std],
-    dtype=np.float32)
-  if center[0] != -1:
-    scale = scale * 1.25
+  center, scale = calculate_center_scale(max_element[:4])
 
   return center, scale
 
@@ -269,7 +234,6 @@ true_pose_images, true_pose_skes = load_true_poses("./squat")
 model_selectbox = st.sidebar.selectbox("Model",
   ["HRNet w32"]
 )
-box_model_threshold = st.sidebar.number_input("Detetor threshold", min_value= 0.1, max_value=1., value=0.7)
 angle_threshold = st.sidebar.number_input("Angle threshold", min_value= 0, max_value=180, value= 5)
 true_pose_threshold = st.sidebar.number_input("True pose threshold", min_value= 0, max_value=100, value= 75)
 video_data = st.sidebar.file_uploader("Choose video", type=["mp4"])
@@ -301,35 +265,36 @@ if video_data and len(true_pose_images) and len(true_pose_skes):
       rep = count // len(true_pose_images)
       
       ret, image_bgr = video_cap.read()
-      if ret:
-        # true_pose_window.image(cv2.cvtColor(true_pose_images[pose_id], cv2.COLOR_BGR2RGB))
-        last_time = time.time()
-        image = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
-        pred_boxes = get_person_detection_boxes(box_model, image, threshold= box_model_threshold)
-
-        for box in pred_boxes:
-          center, scale = box_to_center_scale(box, cfg.MODEL.IMAGE_SIZE[0], cfg.MODEL.IMAGE_SIZE[1])
-          image_pose = image.copy() if cfg.DATASET.COLOR_RGB else image_bgr.copy()
-          pose_preds = get_pose_estimation_prediction(pose_model, image_pose, center, scale)
-          for skeleton in pose_preds:
-            pose_id = find_pose_id(skeleton, SQUAT_KEYPART, STAGE_ANGLE)
-            true_skeleton = true_pose_skes[pose_id]
-            print(pose_id)
-            part_flag = compare_skeleton(true_skeleton, skeleton, SQUAT_PART, threshold= angle_threshold)
-            draw_pose(skeleton, part_flag, SQUAT_PART, image_bgr)
-            true_percent = sum(part_flag) / len(part_flag)
-            if true_percent >= true_pose_threshold:
-              count += 1
-
-        if DEBUG:
-          fps = 1/(time.time() - last_time)
-          image = cv2.putText(image_bgr, 'fps: '+ "%.2f"%(fps), (25, 40), 
-                              cv2.FONT_HERSHEY_SIMPLEX, 1.2, COLOR["blue"], 2)
-
-        true_pose_window.image(cv2.cvtColor(true_pose_images[pose_id], cv2.COLOR_BGR2RGB))
-        result_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        video_window.image(result_image)
-      else:
+      if not ret:
         break
+
+      last_time = time.time()
+      image = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+      center, scale = get_person_box(box_model, image)
+
+      if center[0] == -1:
+        continue
+       
+      image_pose = image.copy() if cfg.DATASET.COLOR_RGB else image_bgr.copy()
+      pose_preds = get_pose_estimation_prediction(pose_model, image_pose, center, scale)
+      for skeleton in pose_preds:
+        pose_id = find_pose_id(skeleton, SQUAT_KEYPART, STAGE_ANGLE)
+        if pose_id == -1:
+          continue
+        true_skeleton = true_pose_skes[pose_id]
+        part_flag = compare_skeleton(true_skeleton, skeleton, SQUAT_PART, threshold= angle_threshold)
+        draw_pose(skeleton, part_flag, SQUAT_PART, image_bgr)
+        true_percent = sum(part_flag) / len(part_flag)
+        if true_percent >= true_pose_threshold:
+          count += 1
+
+      if DEBUG:
+        fps = 1/(time.time() - last_time)
+        image = cv2.putText(image_bgr, 'fps: '+ "%.2f"%(fps), (25, 40), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.2, COLOR["blue"], 2)
+
+      true_pose_window.image(cv2.cvtColor(true_pose_images[pose_id], cv2.COLOR_BGR2RGB))
+      result_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+      video_window.image(result_image)
       
     stop_processing()

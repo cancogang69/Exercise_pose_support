@@ -78,4 +78,4 @@ squat/joint/*
 pose_test/*
 
 
-filetest.py
+logic_test.py

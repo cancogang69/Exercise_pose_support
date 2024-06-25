@@ -80,13 +80,6 @@ def draw_pose(keypoints, img, joint_thickness=6):
         cv2.circle(img, (int(x_b), int(y_b)), joint_thickness, red_value, -1)
         cv2.line(img, (int(x_a), int(y_a)), (int(x_b), int(y_b)), blue_value, 2)
 
-def draw_bbox(box, img):
-    """
-    draw the detected bounding box on the image.
-    """
-    cv2.rectangle(img, box[0], box[1], color=(0, 255, 0), thickness=3)
-
-
 def get_person_detection_boxes(model, img, threshold=0.5):
     results = model(img)
     
@@ -224,7 +217,7 @@ def main():
         create_dir(path)
     
     box_model = torch.hub.load('ultralytics/yolov5', 'yolov5s', _verbose=False)
-    box_model_threshold = 0.7
+    box_model_threshold = 0.3
 
     pose_model = get_pose_net(cfg, is_train=False)
 
@@ -306,7 +299,7 @@ def main():
             center, scale = box_to_center_scale(box, cfg.MODEL.IMAGE_SIZE[0], cfg.MODEL.IMAGE_SIZE[1])
             image_pose = image.copy() if cfg.DATASET.COLOR_RGB else image_bgr.copy()
             pose_preds = get_pose_estimation_prediction(pose_model, image_pose, center, scale)
-            np.savetxt("./4.txt", pose_preds.squeeze().astype(np.int32))
+            np.savetxt("./5.txt", pose_preds.squeeze().astype(np.int32))
             for kpt in pose_preds:
                 draw_pose(kpt, image_bgr) # draw the poses
         
