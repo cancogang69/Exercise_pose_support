@@ -28,10 +28,10 @@ SKELETON = {
   "neck": [7, 8],             #actually it's thorax - upper neck 
   "head": [8, 9],
   "right_forearm": [10, 11],
-  "right_upper_arm": [11, 12], 
+  "right_upper_arm": [12, 11], 
   "right_shoulder": [12, 7],
   "left_forearm": [15, 14],
-  "left_upper_arm": [14, 13], 
+  "left_upper_arm": [13, 14], 
   "left_shoulder": [13, 7]
 }
 
@@ -43,14 +43,21 @@ SQUAT_KEYPART = [
   ["right_lower_leg", "right_thigh"]
 ]
 
-s_k = [ [[0, 1], [2, 1], 
-         [[5, 4], [3, 4]]] ]
+JUMPING_JACK_PART = ["left_lower_leg", "left_thigh", 
+  "right_lower_leg", "right_thigh",
+  "torso", "right_forearm", "right_upper_arm",
+  "left_forearm", "left_upper_arm"]
 
-STAGE_ANGLE = [[180,170], [170, 155],
-               [155, 137], [137, 114],
-               [114, 0], [0, 114],
-               [114, 148], [148, 168],
-               [168, 180]]
+JUMPING_JACK_KEYPART = [
+  ["left_upper_arm", "torso"],
+  ["right_upper_arm", "torso"]
+]
+
+SQUAT_STAGE_ANGLE = [[180, 170], [170, 155],
+               [155, 137], [137, 114], [114, 0]]
+
+JUMPING_STAGE_ANGLE = [[0, 10], [10, 35], [35, 64],
+                       [64, 104], [104, 180]]
 
 COLOR = {
   "red": [0, 0, 255],
