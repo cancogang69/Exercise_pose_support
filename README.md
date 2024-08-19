@@ -11,6 +11,9 @@ Install with anaconda:
 conda env create --name yourenvname --file=environment.yml
 ```
 
+## Demo
+Kagle: https://www.kaggle.com/code/cancogang69/squat-demo
+
 ## Reference
 Squat video used for guiding: https://www.youtube.com/watch?v=dzzQR2h-epg
 
